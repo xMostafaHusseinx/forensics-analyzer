@@ -21,7 +21,7 @@ and exports a full report in CSV or JSON format.
 ---
 
 ## Project Structure
-
+```
 forensics-analyzer/
 │
 ├── analyzer.py        # Core classes: FileRecord, ForensicsScanner, ReportGenerator
@@ -29,6 +29,7 @@ forensics-analyzer/
 ├── reports/           # Output folder for generated reports
 ├── requirements.txt   # Project dependencies
 └── README.md          # You are here
+```
 
 ---
 
