@@ -27,25 +27,37 @@ SUSPICIOUS_EXTENSIONS = {".exe", ".bat", ".sh", ".dll"}
 
 
 class FileRecord:
-    
+
     # Represents a single file found during the scan.
 
     def __init__(self, filepath):
         self.filepath = filepath
         self.filename = os.path.basename(filepath)
         self.extension = os.path.splitext(filepath)[1].lower()
-        self.size_bytes = os.path.getsize(filepath)
-        self.modified_time = datetime.fromtimestamp(
-            os.path.getmtime(filepath)
-        ).strftime("%Y-%m-%d %H:%M:%S")
         self.file_type = KNOWN_EXTENSIONS.get(self.extension, "Unknown")
         self.flags = []
+        self.unreadable = False
+
+        # Case 3: File is locked or unreadable — catch permission errors gracefully
+
+        try:
+            self.size_bytes = os.path.getsize(filepath)
+            self.modified_time = datetime.fromtimestamp(
+                os.path.getmtime(filepath)
+            ).strftime("%Y-%m-%d %H:%M:%S")
+        except (PermissionError, OSError):
+            self.size_bytes = -1
+            self.modified_time = "Unreadable"
+            self.unreadable = True
+            self.flags.append("File unreadable or access denied")
+            return
+
         self._analyze()
 
     def _analyze(self):
-        
+
         # Runs checks on the file and populates self.flags with any suspicious findings.
-        
+
         # Flag 1: Suspicious extension
 
         if self.extension in SUSPICIOUS_EXTENSIONS:
@@ -86,9 +98,9 @@ class FileRecord:
 
 
 class ForensicsScanner:
-  
+
     # Scans a directory and builds a list of FileRecord objects.
-   
+
     def __init__(self, target_folder):
         self.target_folder = target_folder
         self.records = []
@@ -110,7 +122,12 @@ class ForensicsScanner:
                 record = FileRecord(filepath)
                 self.records.append(record)
 
-                if record.is_suspicious():
+                if record.unreadable:
+                    print(
+                        f"{Fore.YELLOW}[LOCKED]  {record.filename} "
+                        f"— File unreadable or access denied{Style.RESET_ALL}"
+                    )
+                elif record.is_suspicious():
                     print(
                         f"{Fore.RED}[FLAGGED] {record.filename} "
                         f"— {', '.join(record.flags)}{Style.RESET_ALL}"
@@ -123,7 +140,7 @@ class ForensicsScanner:
 
 
 class ReportGenerator:
-    
+
     # Takes the scan results and writes them to a file. Supports both CSV and JSON formats.
 
     def __init__(self, records, output_folder="reports"):

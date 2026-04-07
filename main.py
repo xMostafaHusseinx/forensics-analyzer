@@ -1,4 +1,5 @@
 import sys
+import os
 from analyzer import ForensicsScanner, ReportGenerator
 
 
@@ -12,6 +13,18 @@ def main():
     # Get the folder path from the user
 
     folder = input("\nEnter the folder path to scan: ").strip()
+
+    # Case 1: User typed nothing and just hit enter
+
+    if not folder:
+        print("\nNo path entered. Exiting.")
+        return
+
+    # Case 2: User typed a file path instead of a folder path
+
+    if os.path.isfile(folder):
+        print(f"\nError: '{folder}' is a file, not a folder. Please enter a folder path.")
+        return
 
     # Create the scanner and run it
 
