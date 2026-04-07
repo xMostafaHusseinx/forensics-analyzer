@@ -10,57 +10,68 @@ def main():
     print("       Forensics File Analyzer")
     print("=" * 50)
 
-    # Get the folder path from the user
+    while True:
 
-    folder = input("\nEnter the folder path to scan: ").strip()
+        # Get the folder path from the user
 
-    # Case 1: User typed nothing and just hit enter
+        folder = input("\nEnter the folder path to scan: ").strip()
 
-    if not folder:
-        print("\nNo path entered. Exiting.")
-        return
+        # Case 1: User typed nothing and just hit Enter
 
-    # Case 2: User typed a file path instead of a folder path
+        if not folder:
+            print("\nNo path entered. Please try again.")
+            continue
 
-    if os.path.isfile(folder):
-        print(f"\nError: '{folder}' is a file, not a folder. Please enter a folder path.")
-        return
+        # Case 2: User typed a file path instead of a folder path
 
-    # Create the scanner and run it
+        if os.path.isfile(folder):
+            print(f"\nError: '{folder}' is a file, not a folder. Please enter a folder path.")
+            continue
 
-    scanner = ForensicsScanner(folder)
-    scanner.scan()
+        # Create the scanner and run it
 
-    # If no files were found, exit early
+        scanner = ForensicsScanner(folder)
+        scanner.scan()
 
-    if not scanner.records:
-        print("\nNo files found. Exiting.")
-        return
+        # If no files were found, skip report generation
 
-    # Ask the user what report format they want
+        if not scanner.records:
+            print("\nNo files found.")
+        else:
 
-    print("\nExport report as:")
-    print("  [1] CSV")
-    print("  [2] JSON")
-    print("  [3] Both")
+            # Ask the user what report format they want
 
-    choice = input("\nEnter choice (1/2/3): ").strip()
+            print("\nExport report as:")
+            print("  [1] CSV")
+            print("  [2] JSON")
+            print("  [3] Both")
+            print("  [4] Skip")
 
-    # Generate the report based on the user's choice
+            choice = input("\nEnter choice (1/2/3/4): ").strip()
 
-    reporter = ReportGenerator(scanner.records)
+            # Generate the report based on the user's choice
 
-    if choice == "1":
-        reporter.export_csv()
-    elif choice == "2":
-        reporter.export_json()
-    elif choice == "3":
-        reporter.export_csv()
-        reporter.export_json()
-    else:
-        print("Invalid choice. No report generated.")
+            reporter = ReportGenerator(scanner.records)
 
-    print("\nDone. Thank you for using Forensics File Analyzer.")
+            if choice == "1":
+                reporter.export_csv()
+            elif choice == "2":
+                reporter.export_json()
+            elif choice == "3":
+                reporter.export_csv()
+                reporter.export_json()
+            elif choice == "4":
+                print("\nReport skipped.")
+            else:
+                print("\nInvalid choice. Report skipped.")
+
+        # Ask the user if they want to scan another folder or exit
+
+        again = input("\nScan another folder? (y/n): ").strip().lower()
+
+        if again != "y":
+            print("\nDone. Thank you for using Forensics File Analyzer.")
+            break
 
 
 # Only run main() if this file is executed directly
